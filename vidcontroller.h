@@ -1,0 +1,65 @@
+#ifndef VIDCONTROLLER_H
+#define VIDCONTROLLER_H
+
+#include <QThread>
+
+#include <ctime>
+#include <QMutex>
+#include <QImage>
+#include <QThread>
+#include <opencv2/opencv.hpp>
+#include "utils.h"
+
+class VidController : public QThread
+{
+    Q_OBJECT
+public:
+    explicit VidController(QObject *parent = 0);
+    ~VidController();
+
+    //video control
+    bool loadVideo(std::string filename);
+    void play();
+    void stopVid();
+
+    //Video getters
+    double getFrameRate() const;
+    double getCurrentFrame() const;
+    double getNumberOfFrames() const;
+
+    //Video setters
+    void setCurrentFrame( int frameNumber );
+
+    //Video State Checkers
+    bool isStopped() const;
+    bool isOpened() const;
+
+signals:
+    void processedImage(const QImage& image);
+public slots:
+    void exit();
+
+protected:
+    void run();
+
+private:
+    //helper functions
+    cv::Point labelSizeToImageSize(const QPoint&,const QSize&);
+    QImage* processImage(cv::Mat frame);
+    void addObjectsToFrame();
+    //void addObjectToFrame(ul::ObjectInfo object);
+
+    bool quit;
+    bool stop;
+    bool draw_objects;
+    QMutex mutex;
+
+    int framerate;
+    QImage* img;
+    cv::Mat frame;
+    cv::Mat RGBframe;
+    cv::VideoCapture* capture;
+    ul::ObjectInfoHandler objectHandler;
+};
+
+#endif // VIDCONTROLLER_H

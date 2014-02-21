@@ -14,10 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    objectinfo.cpp
+    vidcontroller.cpp \
+    utils.cpp \
+    vidlabel.cpp
 
 HEADERS  += mainwindow.h \
-    objectinfo.h
+    vidcontroller.h \
+    utils.h \
+    vidlabel.h
 
 FORMS    += mainwindow.ui
 
