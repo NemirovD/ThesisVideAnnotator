@@ -79,6 +79,9 @@ public:
     //state checkers
     bool isOpened() const;
 
+    //modifiers
+    void addObject(ObjectInfo);
+
     //IO
     void loadObjectsFromFile(std::string filename);
     void writeObjectsToFile();

@@ -4,38 +4,29 @@
 VidController::VidController(QObject *parent) :
     QThread(parent)
 {
-    this->stop = true;
-    this->quit = false;
-    this->capture = new cv::VideoCapture;
-    this->draw_objects = false;
+    stop = true;
+    quit = false;
+    capture = new cv::VideoCapture;
+    draw_objects = false;
+    mouseCallbackMode = MODE_NONE;
 }
 
 VidController::~VidController()
 {
-    this->mutex.lock();
-    this->stop = true;
-    this->capture->release();
-    this->mutex.unlock();
-    this->wait();
+    mutex.lock();
+    stop = true;
+    capture->release();
+    mutex.unlock();
+    wait();
 }
-
-void VidController::exit()
-{
-    quit = true;
-}
+void VidController::play()
+{if(isStopped()){stop = false;}}
 
 void VidController::stopVid()
-{
-    stop = true;
-}
+{stop = true;}
 
-void VidController::play()
-{
-    if(isStopped())
-    {
-        stop = false;
-    }
-}
+void VidController::exit()
+{quit = true;}
 
 bool VidController::loadVideo(std::string filename)
 {
@@ -62,31 +53,74 @@ bool VidController::loadVideo(std::string filename)
 }
 
 double VidController::getCurrentFrame() const
-{
-    return capture->get(CV_CAP_PROP_POS_FRAMES);
-}
+{return capture->get(CV_CAP_PROP_POS_FRAMES);}
 
 double VidController::getNumberOfFrames() const
-{
-    return capture->get(CV_CAP_PROP_FRAME_COUNT);
-}
+{return capture->get(CV_CAP_PROP_FRAME_COUNT);}
+
 double VidController::getFrameRate() const
-{
-    return framerate;
-}
+{return framerate;}
+
 void VidController::setCurrentFrame( int frameNumber )
-{
-    capture->set(CV_CAP_PROP_POS_FRAMES, frameNumber);
-}
+{capture->set(CV_CAP_PROP_POS_FRAMES, frameNumber);}
 
 bool VidController::isStopped() const
-{
-    return stop;
-}
+{return stop;}
 
 bool VidController::isOpened() const
+{return capture->isOpened();}
+
+void VidController::mouseDown(const QPoint &pt, const QSize &sz)
 {
-    return capture->isOpened();
+    switch(mouseCallbackMode)
+    {
+    case MODE_ADD_OBJECT:
+    {
+        AddObjectRectDrawer *t = new AddObjectRectDrawer(pt,sz,frame,getCurrentFrame());
+        connect(t,
+                SIGNAL(objectInfoCreated(ul::ObjectInfo)),
+                this,
+                SLOT(addObject(ul::ObjectInfo)));
+        _rectDrawer = t;
+        break;
+    }
+    default:
+    case MODE_NONE:
+        break;
+    }
+}
+
+void VidController::mouseMove(const QPoint &pt, const QSize &sz)
+{
+    switch(mouseCallbackMode)
+    {
+    case MODE_ADD_OBJECT:
+        _rectDrawer->updateRect(pt,sz);
+        break;
+
+    default:
+    case MODE_NONE:
+        break;
+    }
+}
+
+void VidController::mouseUp(const QPoint &pt, const QSize &sz)
+{
+    switch(mouseCallbackMode)
+    {
+    case MODE_ADD_OBJECT:
+        _rectDrawer->onMouseUp(pt,sz);
+        break;
+
+    default:
+    case MODE_NONE:
+        break;
+    }
+}
+
+void VidController::addObject(ul::ObjectInfo oi)
+{
+    objectHandler.addObject(oi);
 }
 
 void VidController::run()

@@ -175,10 +175,13 @@ void ObjectInfoHandler::loadObjectsFromFile(std::string filename)
     loadObjectInfo();
 }
 
-void ObjectInfoHandler::writeObjectsToFile()
+void ObjectInfoHandler::addObject(ObjectInfo oi)
 {
-    writeObjectsToFile(_filename);
+    _objectList.push_back(oi);
 }
+
+void ObjectInfoHandler::writeObjectsToFile()
+{writeObjectsToFile(_filename);}
 
 void ObjectInfoHandler::writeObjectsToFile(std::string filename)
 {
