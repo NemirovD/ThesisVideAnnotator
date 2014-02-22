@@ -7,7 +7,7 @@ VidController::VidController(QObject *parent) :
     stop = true;
     quit = false;
     capture = new cv::VideoCapture;
-    draw_objects = true;
+    draw_objects = false;
     mouseCallbackMode = MODE_NONE;
 }
 
@@ -190,6 +190,9 @@ void VidController::showObject(int index)
         //we've got a problem
     }
 }
+
+void VidController::showObjects(bool show)
+{draw_objects = show;}
 
 void VidController::run()
 {

@@ -52,6 +52,7 @@ public slots:
     void addObject(ul::ObjectInfo);
     void editObject(int index, ul::ObjectInfo oi);
     void showObject(int);
+    void showObjects(bool);
 protected:
     void run();
 

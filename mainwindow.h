@@ -40,6 +40,7 @@ public slots:
     void showEditObjectDialog();
 
     void onItemDoubleClick(QModelIndex);
+    void showObjects(bool);
 private:
     void updateLabelTime();
 

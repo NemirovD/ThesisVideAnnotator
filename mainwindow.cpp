@@ -196,6 +196,11 @@ void MainWindow::onItemDoubleClick(QModelIndex mi)
     vidController->showObject(mi.row());
 }
 
+void MainWindow::showObjects(bool toggled)
+{
+    vidController->showObjects(toggled);
+}
+
 void MainWindow::updateLabelTime()
 {
     ui->timeLabel->setText(tr(formatTime.getFormattedTime((int)vidController->getCurrentFrame()
