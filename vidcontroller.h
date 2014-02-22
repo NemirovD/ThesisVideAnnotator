@@ -5,6 +5,7 @@
 #include <QMutex>
 #include <QImage>
 #include <QThread>
+#include <QPushButton>
 #include <opencv2/opencv.hpp>
 #include "utils.h"
 #include "rectdrawer.h"
@@ -31,9 +32,11 @@ public:
     double getFrameRate() const;
     double getCurrentFrame() const;
     double getNumberOfFrames() const;
+    QVector<ul::ObjectInfo>  getObjectList() const;
 
     //Video setters
     void setCurrentFrame( int frameNumber );
+    void setMouseCallbackMode(int MODE);
 
     //Video State Checkers
     bool isStopped() const;
@@ -41,11 +44,14 @@ public:
 
 signals:
     void processedImage(const QImage& image);
+    void objectListChanged(const QVector<ul::ObjectInfo> objects);
 public slots:
     void mouseDown(const QPoint&, const QSize&);
     void mouseMove(const QPoint&, const QSize&);
     void mouseUp(const QPoint&, const QSize&);
     void addObject(ul::ObjectInfo);
+    void editObject(int index, ul::ObjectInfo oi);
+    void showObject(int);
 protected:
     void run();
 
@@ -66,6 +72,7 @@ private:
     cv::Mat frame;
     cv::Mat RGBframe;
     cv::VideoCapture* capture;
+    QVector<ul::ObjectInfo> objectsInFrame;
     ul::ObjectInfoHandler objectHandler;
     int mouseCallbackMode;
     RectDrawer *_rectDrawer;

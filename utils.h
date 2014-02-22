@@ -2,6 +2,8 @@
 #define UTILS_H
 
 #include <QTime>
+#include <QVector>
+#include <QImage>
 #include <opencv2/opencv.hpp>
 
 namespace ul {
@@ -57,8 +59,9 @@ public:
 
     //stream operators
     friend cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi);
-    friend cv::FileNode& operator >> (cv::FileNode& fn, ObjectInfo oi);
+    friend cv::FileNode& operator >> (cv::FileNode& fn, ObjectInfo& oi);
 private:
+
     cv::Mat _icon;
     std::string _name;
     std::string _URL;
@@ -74,13 +77,14 @@ public:
     ObjectInfoHandler(std::string filename);
 
     //getters
-    std::vector<ObjectInfo> objectList() const;
+    QVector<ObjectInfo> objectList() const;
 
     //state checkers
     bool isOpened() const;
 
     //modifiers
     void addObject(ObjectInfo);
+    void editObject(int index, ObjectInfo oi);
 
     //IO
     void loadObjectsFromFile(std::string filename);
@@ -88,14 +92,14 @@ public:
     void writeObjectsToFile(std::string filename);
 
     //Misc
-    std::vector<ObjectInfo> getObjectsIn(int frameNumber);
+    QVector<ObjectInfo> getObjectsIn(int frameNumber);
 private:
     void loadObjectInfo();
-    bool isObjectInList(std::vector<ObjectInfo>,ObjectInfo);
+    bool isObjectInList(QVector<ObjectInfo>,ObjectInfo);
 
     bool _open;
     std::string _filename;
-    std::vector<ObjectInfo> _objectList;
+    QVector<ObjectInfo> _objectList;
 };
 
 std::string getFileNameWithoutExtension(std::string filename);

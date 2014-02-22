@@ -105,42 +105,34 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QListView" name="listView">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-        </widget>
+        <widget class="ObjectListWidget" name="objectList"/>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton_4">
+        <widget class="QPushButton" name="createObjectButton">
          <property name="text">
           <string>Create Object</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QPushButton" name="pushButton">
+          <widget class="QPushButton" name="moveRectButton">
            <property name="text">
             <string>Move Rect</string>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButton_2">
-           <property name="text">
-            <string>Edit Name</string>
+           <property name="checkable">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pushButton_3">
+          <widget class="QPushButton" name="editObjectButton">
            <property name="text">
-            <string>Edit URL</string>
+            <string>Edit Object</string>
            </property>
           </widget>
          </item>
@@ -186,6 +178,11 @@
    <class>VidLabel</class>
    <extends>QLabel</extends>
    <header>vidlabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ObjectListWidget</class>
+   <extends>QListWidget</extends>
+   <header>objectlistwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -254,10 +251,78 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>createObjectButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMouseCallbackAddObject(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>830</x>
+     <y>522</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>moveRectButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMouseCallbackMoveRect(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>752</x>
+     <y>552</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>editObjectButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>showEditObjectDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>889</x>
+     <y>552</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>objectList</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onItemDoubleClick(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>830</x>
+     <y>271</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onPlay()</slot>
   <slot>trackBarSliderPressed()</slot>
   <slot>trackBarSliderReleased()</slot>
+  <slot>setMouseCallbackAddObject(bool)</slot>
+  <slot>setMouseCallbackMoveRect(bool)</slot>
+  <slot>showEditObjectDialog()</slot>
+  <slot>onItemDoubleClick(QModelIndex)</slot>
  </slots>
 </ui>

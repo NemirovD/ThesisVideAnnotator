@@ -1,8 +1,10 @@
 #ifndef RECTDRAWER_H
 #define RECTDRAWER_H
 
+#include <cmath>
 #include <QSize>
 #include <QPoint>
+#include <QVector>
 #include <QObject>
 #include <opencv2/opencv.hpp>
 #include "utils.h"
@@ -14,7 +16,7 @@ class RectDrawer : public QObject
 public:
     explicit RectDrawer(QObject *parent = 0);
     RectDrawer(const QPoint&, const QSize&,cv::Mat, QObject *parent = 0);
-    cv::Mat updateRect(const QPoint&, const QSize&);
+    virtual cv::Mat updateRect(const QPoint&, const QSize&);
     virtual void onMouseUp(const QPoint&, const QSize&);
 protected:
     cv::Point labelSizeToImageSize(const QPoint&,const QSize&);
@@ -38,6 +40,26 @@ private:
     AddObjectDialog *_addObjectDialog;
     cv::Mat _icon;
     int _frameNumber;
+};
+
+class MoveRectDrawer : public RectDrawer
+{
+    Q_OBJECT
+public:
+    MoveRectDrawer(const QPoint&, const QSize&, cv::Mat, QVector<ul::ObjectInfo>);
+    cv::Mat updateRect(const QPoint &, const QSize &);
+    void onMouseUp(const QPoint &, const QSize &);
+signals:
+    void updatedObject(int i, ul::ObjectInfo);
+private:
+    double dist(cv::Point,cv::Point);
+    cv::Point getCenterOf(cv::Rect);
+
+    QVector<ul::ObjectInfo> _objectList;
+    int _objectIndex;
+    cv::Point _initialPoint;
+    bool _rectSelected;
+    cv::Rect _oldRect;
 };
 
 #endif // RECTDRAWER_H

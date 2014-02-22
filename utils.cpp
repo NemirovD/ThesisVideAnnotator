@@ -132,12 +132,11 @@ cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi)
     return fs;
 }
 
-cv::FileNode& operator >> (cv::FileNode& fn, ObjectInfo oi)
+cv::FileNode& operator >> (cv::FileNode& fn, ObjectInfo& oi)
 {
     cv::Mat ico;
     fn["icon"] >> ico;
     oi.icon(ico);
-
     oi.name((std::string)fn["name"]);
 
     oi.URL((std::string)fn["URL"]);
@@ -163,7 +162,7 @@ ObjectInfoHandler::ObjectInfoHandler(std::string filename)
     loadObjectsFromFile(filename);
 }
 
-std::vector<ObjectInfo> ObjectInfoHandler::objectList() const
+QVector<ObjectInfo> ObjectInfoHandler::objectList() const
 {return _objectList;}
 
 bool ObjectInfoHandler::isOpened() const
@@ -180,6 +179,11 @@ void ObjectInfoHandler::addObject(ObjectInfo oi)
     _objectList.push_back(oi);
 }
 
+void ObjectInfoHandler::editObject(int index, ObjectInfo oi)
+{
+    _objectList[index] = oi;
+}
+
 void ObjectInfoHandler::writeObjectsToFile()
 {writeObjectsToFile(_filename);}
 
@@ -187,7 +191,7 @@ void ObjectInfoHandler::writeObjectsToFile(std::string filename)
 {
     cv::FileStorage fs(filename,cv::FileStorage::WRITE);
     fs << "Objects" << "{";
-    for(UINT i = 0; i < _objectList.size(); ++i)
+    for(int i = 0; i < _objectList.size(); ++i)
     {
         //setup arbitrary ID
         std::stringstream ss;
@@ -205,16 +209,16 @@ void ObjectInfoHandler::writeObjectsToFile(std::string filename)
     fs.release();
 }
 
-std::vector<ObjectInfo> ObjectInfoHandler::getObjectsIn(int frameNumber)
+QVector<ObjectInfo> ObjectInfoHandler::getObjectsIn(int frameNumber)
 {
     int lower = frameNumber - 30;
     lower = lower < 0 ? 0 : lower;
 
     int upper = frameNumber + 30;
 
-    std::vector<ObjectInfo> objectsInFrame;
+    QVector<ObjectInfo> objectsInFrame;
 
-    for(UINT i = 0; i < _objectList.size(); ++i)
+    for(int i = 0; i < _objectList.size(); ++i)
     {
         if(_objectList[i].frameNumber()==frameNumber)
         {
@@ -222,7 +226,7 @@ std::vector<ObjectInfo> ObjectInfoHandler::getObjectsIn(int frameNumber)
         }
     }
 
-    for(UINT i = 0; i < _objectList.size(); ++i)
+    for(int i = 0; i < _objectList.size(); ++i)
     {
         if(lower < _objectList[i].frameNumber() &&
                 _objectList[i].frameNumber() < upper){
@@ -243,7 +247,7 @@ void ObjectInfoHandler::loadObjectInfo()
         _open = false;
         return;
     }
-    std::vector<ObjectInfo> toReturn;
+    QVector<ObjectInfo> toReturn;
     cv::FileNode objects = fs["Objects"];
     cv::FileNodeIterator it = objects.begin(), end = objects.end();
     for(; it!= end; ++it)
@@ -258,9 +262,9 @@ void ObjectInfoHandler::loadObjectInfo()
     _open = true;
 }
 
-bool ObjectInfoHandler::isObjectInList(std::vector<ObjectInfo> list, ObjectInfo ob)
+bool ObjectInfoHandler::isObjectInList(QVector<ObjectInfo> list, ObjectInfo ob)
 {
-    for(UINT i = 0; i < list.size(); ++i)
+    for(int i = 0; i < list.size(); ++i)
     {
         if(list[i].name() == ob.name())
         {

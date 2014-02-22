@@ -5,8 +5,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMainWindow>
+#include <QPushButton>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include "utils.h"
 #include "vidcontroller.h"
+#include "editobjectdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -20,6 +24,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+signals:
+
 public slots:
     void openVid();
     void onPlay();
@@ -27,9 +33,17 @@ public slots:
 
     void trackBarSliderPressed();
     void trackBarSliderReleased();
+
+    void setMouseCallbackAddObject(bool);
+    void setMouseCallbackMoveRect(bool);
+
+    void showEditObjectDialog();
+
+    void onItemDoubleClick(QModelIndex);
 private:
     void updateLabelTime();
 
+    EditObjectDialog * editObjectDialog;
     std::string currentFileName;
     ul::FormatTime formatTime;
     VidController * vidController;

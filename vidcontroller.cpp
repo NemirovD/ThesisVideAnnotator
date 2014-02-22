@@ -7,14 +7,16 @@ VidController::VidController(QObject *parent) :
     stop = true;
     quit = false;
     capture = new cv::VideoCapture;
-    draw_objects = false;
+    draw_objects = true;
     mouseCallbackMode = MODE_NONE;
 }
 
 VidController::~VidController()
 {
+    if(capture->isOpened())
+        objectHandler.writeObjectsToFile();
     mutex.lock();
-    stop = true;
+    quit = true;
     capture->release();
     mutex.unlock();
     wait();
@@ -39,6 +41,7 @@ bool VidController::loadVideo(std::string filename)
     std::string fWithoutExt = ul::getFileNameWithoutExtension(filename);
 
     objectHandler = ul::ObjectInfoHandler(fWithoutExt+".xml");
+    emit objectListChanged(objectHandler.objectList());
 
     if(capture->isOpened())
     {
@@ -64,6 +67,9 @@ double VidController::getFrameRate() const
 void VidController::setCurrentFrame( int frameNumber )
 {capture->set(CV_CAP_PROP_POS_FRAMES, frameNumber);}
 
+void VidController::setMouseCallbackMode(int MODE)
+{mouseCallbackMode = MODE;}
+
 bool VidController::isStopped() const
 {return stop;}
 
@@ -72,21 +78,35 @@ bool VidController::isOpened() const
 
 void VidController::mouseDown(const QPoint &pt, const QSize &sz)
 {
-    switch(mouseCallbackMode)
-    {
-    case MODE_ADD_OBJECT:
-    {
-        AddObjectRectDrawer *t = new AddObjectRectDrawer(pt,sz,frame,getCurrentFrame());
-        connect(t,
-                SIGNAL(objectInfoCreated(ul::ObjectInfo)),
-                this,
-                SLOT(addObject(ul::ObjectInfo)));
-        _rectDrawer = t;
-        break;
-    }
-    default:
-    case MODE_NONE:
-        break;
+    if(stop){
+        switch(mouseCallbackMode)
+        {
+        case MODE_ADD_OBJECT:
+        {
+            AddObjectRectDrawer *t = new AddObjectRectDrawer(pt,sz,frame,getCurrentFrame());
+            connect(t,
+                    SIGNAL(objectInfoCreated(ul::ObjectInfo)),
+                    this,
+                    SLOT(addObject(ul::ObjectInfo)));
+            _rectDrawer = t;
+            break;
+        }
+            break;
+        case MODE_MOVE_RECT:
+        {
+            MoveRectDrawer *t = new MoveRectDrawer(pt,sz,frame,objectHandler.objectList());
+            connect(t,
+                    SIGNAL(updatedObject(int,ul::ObjectInfo)),
+                    this,
+                    SLOT(editObject(int,ul::ObjectInfo)));
+            _rectDrawer = t;
+            break;
+        }
+            break;
+        default:
+        case MODE_NONE:
+            break;
+        }
     }
 }
 
@@ -95,9 +115,14 @@ void VidController::mouseMove(const QPoint &pt, const QSize &sz)
     switch(mouseCallbackMode)
     {
     case MODE_ADD_OBJECT:
-        _rectDrawer->updateRect(pt,sz);
+    case MODE_MOVE_RECT:
+    {
+        cv::Mat t = _rectDrawer->updateRect(pt,sz);
+        QImage * qimg = processImage(t);
+        emit processedImage(*qimg);
         break;
-
+    }
+        break;
     default:
     case MODE_NONE:
         break;
@@ -111,20 +136,69 @@ void VidController::mouseUp(const QPoint &pt, const QSize &sz)
     case MODE_ADD_OBJECT:
         _rectDrawer->onMouseUp(pt,sz);
         break;
-
+    case MODE_MOVE_RECT:
+        _rectDrawer->onMouseUp(pt,sz);
+        break;
     default:
     case MODE_NONE:
         break;
     }
 }
 
+QVector<ul::ObjectInfo> VidController::getObjectList() const
+{
+    return objectHandler.objectList();
+}
+
 void VidController::addObject(ul::ObjectInfo oi)
 {
     objectHandler.addObject(oi);
+    emit objectListChanged(objectHandler.objectList());
+}
+
+void VidController::editObject(int index, ul::ObjectInfo oi)
+{
+    objectHandler.editObject(index, oi);
+    emit objectListChanged(objectHandler.objectList());
+}
+
+void VidController::showObject(int index)
+{
+    ul::ObjectInfo object(objectHandler.objectList()[index]);
+    setCurrentFrame(object.frameNumber());
+    if(capture->read(frame))
+    {
+        cv::Mat tFrame(frame.clone());
+        cv::Rect r = object.location();
+        cv::rectangle(tFrame,
+                      r,
+                      cv::Scalar::all(255),
+                      4);
+
+        cv::putText(tFrame,
+                    object.name(),
+                    cv::Point(r.x,r.y-10),
+                    cv::FONT_HERSHEY_DUPLEX,
+                    2,
+                    cv::Scalar::all(255),
+                    4);
+        img = processImage(tFrame);
+        emit processedImage(*img);
+    }
+    else
+    {
+        //we've got a problem
+    }
 }
 
 void VidController::run()
 {
+    //so that the first frame gets shown on load
+    capture->read(frame);
+    img = processImage(frame);
+    emit processedImage(*img);
+
+    //main part of the function
     int delay = 1000/framerate;
     while(!quit)
     {
@@ -139,8 +213,8 @@ void VidController::run()
             }
             else
             {
-                //if(draw_annotations)
-                //   addObjectsToFrame();
+                if(draw_objects)
+                   addObjectsToFrame();
                 img = processImage(frame);
             }
         }
@@ -168,6 +242,10 @@ cv::Point VidController::labelSizeToImageSize(const QPoint& pt,const QSize& sz)
 
 QImage* VidController::processImage(cv::Mat frame)
 {
+    //Don't change RGBframe to a local variable
+    //there will be plenty of issues
+    //one is a performance issue
+    //the other is a memory issue
     QImage * img;
     //3channel transfer
     if(frame.channels() == 3)
@@ -176,6 +254,7 @@ QImage* VidController::processImage(cv::Mat frame)
         img = new QImage((const unsigned char*)(RGBframe.data),
                          RGBframe.cols,
                          RGBframe.rows,
+                         RGBframe.step,
                          QImage::Format_RGB888);
     }
     //single channel transfer
@@ -184,26 +263,28 @@ QImage* VidController::processImage(cv::Mat frame)
         img = new QImage((const unsigned char*)(frame.data),
                          frame.cols,
                          frame.rows,
+                         RGBframe.step,
                          QImage::Format_Indexed8);
     }
+
     return img;
 }
 
 void VidController::addObjectsToFrame()
 {
 
-    std::vector<ul::ObjectInfo> objectsToDraw(objectHandler.getObjectsIn(getCurrentFrame()));
+    objectsInFrame = objectHandler.getObjectsIn(getCurrentFrame());
 
-    for(unsigned int i = 0; i < objectsToDraw.size(); ++i)
+    for(int i = 0; i < objectsInFrame.size(); ++i)
     {
-        cv::Rect r = objectsToDraw[i].location();
+        cv::Rect r = objectsInFrame[i].location();
         cv::rectangle(frame,
                       r,
                       cv::Scalar::all(255),
                       4);
 
         cv::putText(frame,
-                    objectsToDraw[i].name(),
+                    objectsInFrame[i].name(),
                     cv::Point(r.x,r.y-10),
                     cv::FONT_HERSHEY_DUPLEX,
                     2,

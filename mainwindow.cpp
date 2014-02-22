@@ -9,10 +9,53 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->objectSideBar->setVisible(false);
 
     vidController = new VidController(this);
+
+    editObjectDialog = new EditObjectDialog(this);
+
+    //oh my god this list is getting tedious...
+    //I wish there was a better way
     connect(vidController,
             SIGNAL(processedImage(QImage)),
             this,
             SLOT(updatePlayerUI(QImage)));
+
+    //Mouse connections
+    connect(ui->vidLabel,
+            SIGNAL(mousePressed(const QPoint&, const QSize&)),
+            vidController,
+            SLOT(mouseDown(const QPoint&,const QSize&)));
+
+    connect(ui->vidLabel,
+            SIGNAL(mouseMoved(const QPoint&, const QSize&)),
+            vidController,
+            SLOT(mouseMove(const QPoint&,const QSize&)));
+
+    connect(ui->vidLabel,
+            SIGNAL(mouseReleased(const QPoint&, const QSize&)),
+            vidController,
+            SLOT(mouseUp(const QPoint&,const QSize&)));
+
+    //updateing list
+    qRegisterMetaType<QVector<ul::ObjectInfo>>("QVector<ul::ObjectInfo>");
+    connect(vidController,
+            SIGNAL(objectListChanged(const QVector<ul::ObjectInfo>)),
+            ui->objectList,
+            SLOT(updateObjectList(const QVector<ul::ObjectInfo>)));
+
+    connect(ui->objectList,
+            SIGNAL(currentRowChanged(int)),
+            editObjectDialog,
+            SLOT(activeObject(int)));
+
+    connect(vidController,
+            SIGNAL(objectListChanged(const QVector<ul::ObjectInfo>)),
+            editObjectDialog,
+            SLOT(updateObjectList(const QVector<ul::ObjectInfo>)));
+
+    connect(editObjectDialog,
+            SIGNAL(updatedObjectInfo(int,ul::ObjectInfo)),
+            vidController,
+            SLOT(editObject(int,ul::ObjectInfo)));
 }
 
 MainWindow::~MainWindow()
@@ -102,6 +145,55 @@ void MainWindow::trackBarSliderReleased()
     this->updateLabelTime();
 
     vidController->play();
+}
+
+void MainWindow::setMouseCallbackAddObject(bool toggled)
+{
+    if(toggled)
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_ADD_OBJECT);
+        if(ui->moveRectButton->isChecked())
+        {
+            bool oldstate = ui->moveRectButton->blockSignals(true);
+            ui->moveRectButton->setChecked(false);
+            ui->moveRectButton->blockSignals(oldstate);
+        }
+    }
+    else
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_NONE);
+    }
+}
+
+void MainWindow::setMouseCallbackMoveRect(bool toggled)
+{
+    if(toggled)
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_MOVE_RECT);
+        if(ui->createObjectButton->isChecked())
+        {
+            bool oldstate = ui->createObjectButton->blockSignals(true);
+            ui->createObjectButton->setChecked(false);
+            ui->createObjectButton->blockSignals(oldstate);
+        }
+    }
+    else
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_NONE);
+    }
+}
+
+void MainWindow::showEditObjectDialog()
+{
+    if(!(editObjectDialog->objectIndex() < 0))
+    {
+        editObjectDialog->exec();
+    }
+}
+
+void MainWindow::onItemDoubleClick(QModelIndex mi)
+{
+    vidController->showObject(mi.row());
 }
 
 void MainWindow::updateLabelTime()
