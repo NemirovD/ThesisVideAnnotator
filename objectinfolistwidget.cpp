@@ -16,8 +16,16 @@ ObjectInfoListWidget::ObjectInfoListWidget(cv::Mat icon,
     ui(new Ui::ObjectInfoListWidget)
 {
     ui->setupUi(this);
-    ui->nameLabel->setText(QString(name.c_str()));
-    ui->urlLabel->setText(QString(url.c_str()));
+    ui->nameLabel->setText(name.c_str());
+
+    std::string htmlAnchor = "";
+    htmlAnchor += "<a href=\"" + url+ "\">";
+    htmlAnchor += url;
+    htmlAnchor += "</a>";
+
+    ui->urlLabel->setText(htmlAnchor.c_str());
+    ui->urlLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+    ui->urlLabel->setOpenExternalLinks(true);
 
     QImage img = processImage(icon);
 
@@ -35,7 +43,6 @@ ObjectInfoListWidget::~ObjectInfoListWidget()
 QImage ObjectInfoListWidget::processImage(cv::Mat frame)
 {
     QImage * img;
-    cv::Mat RGBframe;
     //3channel transfer
     if(frame.channels() == 3)
     {
@@ -55,8 +62,5 @@ QImage ObjectInfoListWidget::processImage(cv::Mat frame)
                          RGBframe.step,
                          QImage::Format_Indexed8);
     }
-
-    QImage img2(*img);
-    img2.detach();
-    return img2;
+    return *img;
 }

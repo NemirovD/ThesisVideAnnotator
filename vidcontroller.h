@@ -45,6 +45,8 @@ public:
 signals:
     void processedImage(const QImage& image);
     void objectListChanged(const QVector<ul::ObjectInfo> objects);
+
+    void videoEnded();
 public slots:
     void mouseDown(const QPoint&, const QSize&);
     void mouseMove(const QPoint&, const QSize&);

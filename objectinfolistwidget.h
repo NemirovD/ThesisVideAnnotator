@@ -21,6 +21,7 @@ public:
 
 private:
     QImage processImage(cv::Mat frame);
+
     cv::Mat RGBframe;
     Ui::ObjectInfoListWidget *ui;
 };

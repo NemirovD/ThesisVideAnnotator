@@ -56,6 +56,11 @@ MainWindow::MainWindow(QWidget *parent) :
             SIGNAL(updatedObjectInfo(int,ul::ObjectInfo)),
             vidController,
             SLOT(editObject(int,ul::ObjectInfo)));
+
+    connect(vidController,
+            SIGNAL(videoEnded()),
+            this,
+            SLOT(onVidEnding()));
 }
 
 MainWindow::~MainWindow()
@@ -107,10 +112,12 @@ void MainWindow::onPlay()
         if(vidController->isStopped())
         {
             vidController->play();
+            ui->playpauseButton->setText("Pause");
         }
         else
         {
             vidController->stopVid();
+            ui->playpauseButton->setText("Play");
         }
     }
     else
@@ -199,6 +206,11 @@ void MainWindow::onItemDoubleClick(QModelIndex mi)
 void MainWindow::showObjects(bool toggled)
 {
     vidController->showObjects(toggled);
+}
+
+void MainWindow::onVidEnding()
+{
+    ui->objectSideBar->setVisible(true);
 }
 
 void MainWindow::updateLabelTime()

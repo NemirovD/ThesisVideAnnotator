@@ -213,6 +213,7 @@ void VidController::run()
             if(!capture->read(frame))
             {
                 stop = true;
+                emit videoEnded();
             }
             else
             {

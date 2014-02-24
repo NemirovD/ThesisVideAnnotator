@@ -41,6 +41,8 @@ public slots:
 
     void onItemDoubleClick(QModelIndex);
     void showObjects(bool);
+
+    void onVidEnding();
 private:
     void updateLabelTime();
 
