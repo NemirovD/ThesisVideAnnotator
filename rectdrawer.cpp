@@ -23,7 +23,20 @@ cv::Mat RectDrawer::updateRect(const QPoint &pt, const QSize &sz)
     _rect.width = cpt.x - _rect.x;
     _rect.height = cpt.y - _rect.y;
 
-    cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
+    cv::Rect box;
+
+    box = _rect;
+
+    if( box.width < 0 ){
+        box.x += box.width;
+        box.width *= -1;
+    }
+    if( box.height < 0 ){
+        box.y += box.height;
+        box.height *= -1;
+    }
+
+    cv::rectangle(_tFrame, box, cv::Scalar::all(255),3);
     return _tFrame;
 }
 
@@ -58,7 +71,17 @@ void AddObjectRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
 
     _icon = cv::Mat(_frame,_rect);
 
+    if( _rect.width < 0 ){
+        _rect.x += _rect.width;
+        _rect.width *= -1;
+    }
+    if( _rect.height < 0 ){
+        _rect.y += _rect.height;
+        _rect.height *= -1;
+    }
+
     cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
+
     if(_rect.area() > 0)
     {
         _addObjectDialog = new AddObjectDialog();
@@ -181,4 +204,53 @@ double MoveRectDrawer::dist(cv::Point p1, cv::Point p2)
     double y2 = y*y;
 
     return sqrt(x2+y2);
+}
+
+AddTrackerRectDrawer::AddTrackerRectDrawer(const QPoint &pt,
+                                           const QSize &sz,
+                                           cv::Mat frame,
+                                           int frameNumber) :
+    RectDrawer(pt,sz,frame)
+{
+    _frameNumber = frameNumber;
+}
+
+void AddTrackerRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
+{
+    _tFrame = _frame.clone();
+    cv::Point cpt(labelSizeToImageSize(pt,sz));
+
+    _rect.width = cpt.x - _rect.x;
+    _rect.height = cpt.y - _rect.y;
+
+    _icon = cv::Mat(_frame,_rect);
+
+    if( _rect.width < 0 ){
+        _rect.x += _rect.width;
+        _rect.width *= -1;
+    }
+    if( _rect.height < 0 ){
+        _rect.y += _rect.height;
+        _rect.height *= -1;
+    }
+
+    cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
+    if(_rect.area() > 0)
+    {
+        _addObjectDialog = new AddObjectDialog();
+        connect(_addObjectDialog,
+                SIGNAL(rectInfo(std::string,std::string)),
+                this,
+                SLOT(createObjectInfo(std::string,std::string)));
+        _addObjectDialog->exec();
+    }
+}
+
+void AddTrackerRectDrawer::createObjectInfo(std::string name, std::string url)
+{
+    ul::ObjectInfo t(_icon, name, url, _frameNumber, _rect);
+    //emit objectInfoCreated(t);
+    //TODO
+    //EMIT SIGNAL THAT TELLS VC TO ADD TRACKER
+    //MAYBE MAKE A TRACKER HANDLER CLASS
 }

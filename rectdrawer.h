@@ -62,4 +62,20 @@ private:
     cv::Rect _oldRect;
 };
 
+class AddTrackerRectDrawer : public RectDrawer
+{
+    Q_OBJECT
+public:
+    AddTrackerRectDrawer(const QPoint&, const QSize&, cv::Mat, int);
+    void onMouseUp(const QPoint &, const QSize &);
+signals:
+    void newTracker(/* something goes here */);
+public slots:
+    void createObjectInfo(std::string,std::string);
+private:
+    AddObjectDialog *_addObjectDialog;
+    cv::Mat _icon;
+    int _frameNumber;
+};
+
 #endif // RECTDRAWER_H

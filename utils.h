@@ -32,6 +32,13 @@ private:
     int _totalTime;
 };
 
+class ObjectLoc
+{
+public:
+    int _frameNumber;
+    cv::Mat _rect;
+};
+
 class ObjectInfo
 {
 public:
@@ -49,6 +56,7 @@ public:
     std::string URL() const;
     int frameNumber() const;
     cv::Rect location() const;
+    QVector<ObjectLoc> objectLocs() const;
 
     //setters
     void icon(cv::Mat);
@@ -56,6 +64,10 @@ public:
     void URL(std::string);
     void frameNumber(int);
     void location(cv::Rect);
+    void objectLocs(QVector<ObjectLoc>);
+
+    //modifiers
+    void addObjectLoc();
 
     //stream operators
     friend cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi);
@@ -67,6 +79,7 @@ private:
     std::string _URL;
     int _frameNumber;
     cv::Rect _location;
+    QVector<ObjectLoc> _objectLocs;
 };
 
 
