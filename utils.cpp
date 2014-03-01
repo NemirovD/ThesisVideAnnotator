@@ -64,6 +64,14 @@ std::string getFileNameWithoutExtension(std::string filename)
     return toBeReturned;
 }
 
+ObjectLoc::ObjectLoc(){}
+
+ObjectLoc::ObjectLoc(int frameNumber, cv::Rect rect)
+{
+    _frameNumber = frameNumber;
+    _rect = rect;
+}
+
 ObjectInfo::ObjectInfo()
 {
     _icon = cv::Mat();
@@ -106,6 +114,9 @@ int ObjectInfo::frameNumber() const
 cv::Rect ObjectInfo::location() const
 {return _location;}
 
+QVector<ObjectLoc> ObjectInfo::objectLocs() const
+{return _objectLocs;}
+
 void ObjectInfo::icon(cv::Mat i)
 {_icon = i;}
 
@@ -120,6 +131,12 @@ void ObjectInfo::frameNumber(int f)
 
 void ObjectInfo::location(cv::Rect l)
 {_location = l;}
+
+void ObjectInfo::objectLocs(QVector<ObjectLoc> locs)
+{_objectLocs = locs;}
+
+void ObjectInfo::addObjectLoc(ObjectLoc ol)
+{_objectLocs.push_back(ol);}
 
 cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi)
 {
@@ -237,6 +254,25 @@ QVector<ObjectInfo> ObjectInfoHandler::getObjectsIn(int frameNumber)
         }
     }
     return objectsInFrame;
+}
+
+void ObjectInfoHandler::addTracker(int index, int frameNumber, cv::Rect loc, cv::Mat frame)
+{
+    ObjectTracker ot(frame,loc);
+    ot.trackerIndex(index);
+    _objectTrackers.push_back(ot);
+    _objectList[index].addObjectLoc(ObjectLoc(frameNumber,loc));
+}
+
+void ObjectInfoHandler::updateTrackers(int frameNumber, cv::Mat frame)
+{
+    for(int i = 0; i < _objectTrackers.size(); ++i)
+    {
+        cv::Rect loc(_objectTrackers[i].getObject(frame));
+
+        _objectList[_objectTrackers[i].trackerIndex()].
+                addObjectLoc(ObjectLoc(frameNumber,loc));
+    }
 }
 
 void ObjectInfoHandler::loadObjectInfo()

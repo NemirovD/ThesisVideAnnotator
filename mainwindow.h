@@ -36,6 +36,7 @@ public slots:
 
     void setMouseCallbackAddObject(bool);
     void setMouseCallbackMoveRect(bool);
+    void setMouseCallbackAddTracker(bool);
 
     void showEditObjectDialog();
 

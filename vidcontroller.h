@@ -21,6 +21,7 @@ public:
     static const int MODE_NONE = 0;
     static const int MODE_ADD_OBJECT = 1;
     static const int MODE_MOVE_RECT = 2;
+    static const int MODE_ADD_TRACKER = 3;
 
     //video control
     void play();
@@ -55,6 +56,8 @@ public slots:
     void editObject(int index, ul::ObjectInfo oi);
     void showObject(int);
     void showObjects(bool);
+    void currentObjectListIndex(int);
+    void newTracker(cv::Rect);
 protected:
     void run();
 
@@ -71,6 +74,7 @@ private:
     QMutex mutex;
 
     int framerate;
+    int _currentObjectListIndex;
     QImage* img;
     cv::Mat frame;
     cv::Mat RGBframe;

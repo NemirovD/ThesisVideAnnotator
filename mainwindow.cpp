@@ -61,6 +61,11 @@ MainWindow::MainWindow(QWidget *parent) :
             SIGNAL(videoEnded()),
             this,
             SLOT(onVidEnding()));
+
+    connect(ui->objectList,
+            SIGNAL(currentRowChanged(int)),
+            vidController,
+            SLOT(currentObjectListIndex(int)));
 }
 
 MainWindow::~MainWindow()
@@ -159,11 +164,16 @@ void MainWindow::setMouseCallbackAddObject(bool toggled)
     if(toggled)
     {
         vidController->setMouseCallbackMode(VidController::MODE_ADD_OBJECT);
-        if(ui->moveRectButton->isChecked())
+        if(ui->moveRectButton->isChecked() ||
+                ui->addTrackerButton->isChecked())
         {
             bool oldstate = ui->moveRectButton->blockSignals(true);
             ui->moveRectButton->setChecked(false);
             ui->moveRectButton->blockSignals(oldstate);
+
+            oldstate = ui->addTrackerButton->blockSignals(true);
+            ui->addTrackerButton->setChecked(false);
+            ui->addTrackerButton->blockSignals(oldstate);
         }
     }
     else
@@ -177,11 +187,40 @@ void MainWindow::setMouseCallbackMoveRect(bool toggled)
     if(toggled)
     {
         vidController->setMouseCallbackMode(VidController::MODE_MOVE_RECT);
-        if(ui->createObjectButton->isChecked())
+        if(ui->createObjectButton->isChecked() ||
+                ui->addTrackerButton->isChecked())
         {
             bool oldstate = ui->createObjectButton->blockSignals(true);
             ui->createObjectButton->setChecked(false);
             ui->createObjectButton->blockSignals(oldstate);
+
+            oldstate = ui->addTrackerButton->blockSignals(true);
+            ui->addTrackerButton->setChecked(false);
+            ui->addTrackerButton->blockSignals(oldstate);
+        }
+    }
+    else
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_NONE);
+    }
+}
+
+void MainWindow::setMouseCallbackAddTracker(bool toggled)
+{
+    if(toggled)
+    {
+        vidController->setMouseCallbackMode(VidController::MODE_ADD_TRACKER);
+        if(ui->createObjectButton->isChecked() ||
+                ui->moveRectButton->isChecked())
+        {
+            std::cout << "test" << std::endl;
+            bool oldstate = ui->createObjectButton->blockSignals(true);
+            ui->createObjectButton->setChecked(false);
+            ui->createObjectButton->blockSignals(oldstate);
+
+            oldstate = ui->moveRectButton->blockSignals(true);
+            ui->moveRectButton->setChecked(false);
+            ui->moveRectButton->blockSignals(oldstate);
         }
     }
     else

@@ -9,6 +9,7 @@
 #include <opencv2/opencv.hpp>
 #include "utils.h"
 #include "addobjectdialog.h"
+#include "confirmationdialog.h"
 
 class RectDrawer : public QObject
 {
@@ -66,16 +67,14 @@ class AddTrackerRectDrawer : public RectDrawer
 {
     Q_OBJECT
 public:
-    AddTrackerRectDrawer(const QPoint&, const QSize&, cv::Mat, int);
+    AddTrackerRectDrawer(const QPoint&, const QSize&, cv::Mat);
     void onMouseUp(const QPoint &, const QSize &);
 signals:
-    void newTracker(/* something goes here */);
+    void newTracker(cv::Rect);
 public slots:
-    void createObjectInfo(std::string,std::string);
+    void createTracker(bool);
 private:
-    AddObjectDialog *_addObjectDialog;
-    cv::Mat _icon;
-    int _frameNumber;
+    ConfirmationDialog * _cDialog;
 };
 
 #endif // RECTDRAWER_H

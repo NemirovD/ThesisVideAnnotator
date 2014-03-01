@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     rectdrawer.cpp \
     objectinfolistwidget.cpp \
     objectlistwidget.cpp \
-    editobjectdialog.cpp
+    editobjectdialog.cpp \
+    objecttracker.cpp \
+    confirmationdialog.cpp
 
 HEADERS  += mainwindow.h \
     vidcontroller.h \
@@ -31,16 +33,21 @@ HEADERS  += mainwindow.h \
     rectdrawer.h \
     objectinfolistwidget.h \
     objectlistwidget.h \
-    editobjectdialog.h
+    editobjectdialog.h \
+    objecttracker.h \
+    confirmationdialog.h
 
 FORMS    += mainwindow.ui \
     addobjectdialog.ui \
     objectinfolistwidget.ui \
-    editobjectdialog.ui
+    editobjectdialog.ui \
+    confirmationdialog.ui
 
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_core240
+win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_video240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_highgui240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_imgproc240
+win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_features2d240
 
 INCLUDEPATH += $$PWD/../../../../../../Android_Project/opencv/build/include
 DEPENDPATH += $$PWD/../../../../../../Android_Project/opencv/build/include

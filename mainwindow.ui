@@ -118,14 +118,28 @@
         <widget class="ObjectListWidget" name="objectList"/>
        </item>
        <item>
-        <widget class="QPushButton" name="createObjectButton">
-         <property name="text">
-          <string>Create Object</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="createObjectButton">
+           <property name="text">
+            <string>Create Object</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="addTrackerButton">
+           <property name="text">
+            <string>Add Object Tracker</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -341,6 +355,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>addTrackerButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMouseCallbackAddTracker(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>889</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>291</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onPlay()</slot>
@@ -351,5 +381,6 @@
   <slot>showEditObjectDialog()</slot>
   <slot>onItemDoubleClick(QModelIndex)</slot>
   <slot>showObjects(bool)</slot>
+  <slot>setMouseCallbackAddTracker(bool)</slot>
  </slots>
 </ui>

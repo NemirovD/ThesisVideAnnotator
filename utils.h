@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QImage>
 #include <opencv2/opencv.hpp>
+#include "objecttracker.h"
 
 namespace ul {
 //used to format the time of the labels
@@ -35,8 +36,10 @@ private:
 class ObjectLoc
 {
 public:
+    ObjectLoc();
+    ObjectLoc(int,cv::Rect);
     int _frameNumber;
-    cv::Mat _rect;
+    cv::Rect _rect;
 };
 
 class ObjectInfo
@@ -67,7 +70,7 @@ public:
     void objectLocs(QVector<ObjectLoc>);
 
     //modifiers
-    void addObjectLoc();
+    void addObjectLoc(ObjectLoc);
 
     //stream operators
     friend cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi);
@@ -106,6 +109,8 @@ public:
 
     //Misc
     QVector<ObjectInfo> getObjectsIn(int frameNumber);
+    void addTracker(int index, int frameNumber, cv::Rect,cv::Mat);
+    void updateTrackers(int, cv::Mat);
 private:
     void loadObjectInfo();
     bool isObjectInList(QVector<ObjectInfo>,ObjectInfo);
@@ -113,6 +118,7 @@ private:
     bool _open;
     std::string _filename;
     QVector<ObjectInfo> _objectList;
+    QVector<ObjectTracker> _objectTrackers;
 };
 
 std::string getFileNameWithoutExtension(std::string filename);

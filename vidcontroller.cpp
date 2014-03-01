@@ -103,6 +103,17 @@ void VidController::mouseDown(const QPoint &pt, const QSize &sz)
             break;
         }
             break;
+        case MODE_ADD_TRACKER:
+        {
+            AddTrackerRectDrawer *t = new AddTrackerRectDrawer(pt,sz,frame);
+            connect(t,
+                    SIGNAL(newTracker(cv::Rect)),
+                    this,
+                    SLOT(newTracker(cv::Rect)));
+            _rectDrawer = t;
+            break;
+        }
+            break;
         default:
         case MODE_NONE:
             break;
@@ -114,6 +125,7 @@ void VidController::mouseMove(const QPoint &pt, const QSize &sz)
 {
     switch(mouseCallbackMode)
     {
+    case MODE_ADD_TRACKER:
     case MODE_ADD_OBJECT:
     case MODE_MOVE_RECT:
     {
@@ -133,9 +145,8 @@ void VidController::mouseUp(const QPoint &pt, const QSize &sz)
 {
     switch(mouseCallbackMode)
     {
+    case MODE_ADD_TRACKER:
     case MODE_ADD_OBJECT:
-        _rectDrawer->onMouseUp(pt,sz);
-        break;
     case MODE_MOVE_RECT:
         _rectDrawer->onMouseUp(pt,sz);
         break;
@@ -164,6 +175,7 @@ void VidController::editObject(int index, ul::ObjectInfo oi)
 
 void VidController::showObject(int index)
 {
+    stop = true;
     ul::ObjectInfo object(objectHandler.objectList()[index]);
     setCurrentFrame(object.frameNumber());
     if(capture->read(frame))
@@ -193,6 +205,17 @@ void VidController::showObject(int index)
 
 void VidController::showObjects(bool show)
 {draw_objects = show;}
+
+void VidController::currentObjectListIndex(int n)
+{_currentObjectListIndex = n;}
+
+void VidController::newTracker(cv::Rect r)
+{
+    objectHandler.addTracker(_currentObjectListIndex,
+                             getCurrentFrame(),
+                             r,
+                             frame);
+}
 
 void VidController::run()
 {

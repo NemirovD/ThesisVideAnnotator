@@ -20,6 +20,11 @@ cv::Mat RectDrawer::updateRect(const QPoint &pt, const QSize &sz)
     _tFrame = _frame.clone();
     cv::Point cpt(labelSizeToImageSize(pt,sz));
 
+    std::cout << _rect.x << " " <<
+                 _rect.y << " " <<
+                 _rect.height << " " <<
+                 _rect.width  << " " << std::endl;
+
     _rect.width = cpt.x - _rect.x;
     _rect.height = cpt.y - _rect.y;
 
@@ -65,7 +70,6 @@ void AddObjectRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
 {
     _tFrame = _frame.clone();
     cv::Point cpt(labelSizeToImageSize(pt,sz));
-
     _rect.width = cpt.x - _rect.x;
     _rect.height = cpt.y - _rect.y;
 
@@ -80,7 +84,12 @@ void AddObjectRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
         _rect.height *= -1;
     }
 
-    cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
+    std::cout << _rect.x << " " <<
+                 _rect.y << " " <<
+                 _rect.height << " " <<
+                 _rect.width  << " " << std::endl;
+
+    //cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
 
     if(_rect.area() > 0)
     {
@@ -137,7 +146,6 @@ MoveRectDrawer::MoveRectDrawer(const QPoint &pt,
        int index = -1;
        for(int i = 0; i < iList.size(); ++i)
        {
-           std::cout << list[iList[i]].location().x << std::endl;
            double calcDistance = dist(cpt,getCenterOf(list[iList[i]].location()));
            if(calcDistance < distance)
            {
@@ -208,11 +216,9 @@ double MoveRectDrawer::dist(cv::Point p1, cv::Point p2)
 
 AddTrackerRectDrawer::AddTrackerRectDrawer(const QPoint &pt,
                                            const QSize &sz,
-                                           cv::Mat frame,
-                                           int frameNumber) :
+                                           cv::Mat frame) :
     RectDrawer(pt,sz,frame)
 {
-    _frameNumber = frameNumber;
 }
 
 void AddTrackerRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
@@ -222,8 +228,6 @@ void AddTrackerRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
 
     _rect.width = cpt.x - _rect.x;
     _rect.height = cpt.y - _rect.y;
-
-    _icon = cv::Mat(_frame,_rect);
 
     if( _rect.width < 0 ){
         _rect.x += _rect.width;
@@ -237,20 +241,25 @@ void AddTrackerRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
     cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
     if(_rect.area() > 0)
     {
-        _addObjectDialog = new AddObjectDialog();
-        connect(_addObjectDialog,
-                SIGNAL(rectInfo(std::string,std::string)),
+        _cDialog = new ConfirmationDialog(
+                    "Are you sure you want to create this tracker?");
+
+        connect(_cDialog,
+                SIGNAL(confirmed(bool)),
                 this,
-                SLOT(createObjectInfo(std::string,std::string)));
-        _addObjectDialog->exec();
+                SLOT(createTracker(bool)));
+        _cDialog->exec();
     }
 }
 
-void AddTrackerRectDrawer::createObjectInfo(std::string name, std::string url)
+void AddTrackerRectDrawer::createTracker(bool tf)
 {
-    ul::ObjectInfo t(_icon, name, url, _frameNumber, _rect);
-    //emit objectInfoCreated(t);
-    //TODO
-    //EMIT SIGNAL THAT TELLS VC TO ADD TRACKER
-    //MAYBE MAKE A TRACKER HANDLER CLASS
+    if(tf)
+    {
+        emit newTracker(_rect);
+    }
+    disconnect(_cDialog,
+               SIGNAL(confirmed(bool)),
+               this,
+               SLOT(createTracker(bool)));
 }
