@@ -72,6 +72,33 @@ ObjectLoc::ObjectLoc(int frameNumber, cv::Rect rect)
     _rect = rect;
 }
 
+cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectLoc ol)
+{
+    fs << "frameNumber" << ol._frameNumber;
+    fs << "rect" << ol._rect;
+    return fs;
+}
+
+cv::FileNode& operator >> (cv::FileNode& fn, ObjectLoc& ol)
+{
+    ol._frameNumber = (int)fn["frameNumber"];
+
+    std::vector<int> r;
+    fn["rect"] >> r;
+    cv::Rect rl(r[0],r[1],r[2],r[3]);
+    ol._rect = rl;
+
+    return fn;
+}
+
+LocAndName::LocAndName(){}
+
+LocAndName::LocAndName(std::string name,cv::Rect loc)
+{
+    _name = name;
+    _loc = loc;
+}
+
 ObjectInfo::ObjectInfo()
 {
     _icon = cv::Mat();
@@ -146,6 +173,19 @@ cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectInfo oi)
     fs << "frameNumber" << oi._frameNumber;
     fs << "location" << oi._location;
 
+    fs << "objectLocs" << "{";
+
+    for(int i = 0; i < oi._objectLocs.size(); ++i)
+    {
+        std::stringstream ss;
+        ss << "ol" << i;
+        fs << ss.str() << "{";
+        fs << oi._objectLocs[i];
+        fs << "}";
+    }
+
+    fs << "}";
+
     return fs;
 }
 
@@ -165,6 +205,17 @@ cv::FileNode& operator >> (cv::FileNode& fn, ObjectInfo& oi)
     cv::Rect rl(r[0],r[1],r[2],r[3]);
     oi.location(rl);
 
+    cv::FileNode objectsLocs = fn["Objects"];
+    cv::FileNodeIterator it = objectsLocs.begin(), end = objectsLocs.end();
+
+    for(; it!=end; ++it)
+    {
+        cv::FileNode node = objectsLocs[((cv::FileNode)*it).name()];
+        ObjectLoc t;
+        node >> t;
+        oi._objectLocs.push_back(t);
+    }
+
     return fn;
 }
 
@@ -181,6 +232,9 @@ ObjectInfoHandler::ObjectInfoHandler(std::string filename)
 
 QVector<ObjectInfo> ObjectInfoHandler::objectList() const
 {return _objectList;}
+
+QVector<ObjectTracker> ObjectInfoHandler::objectTrackers() const
+{return _objectTrackers;}
 
 bool ObjectInfoHandler::isOpened() const
 {return _open;}
@@ -256,6 +310,26 @@ QVector<ObjectInfo> ObjectInfoHandler::getObjectsIn(int frameNumber)
     return objectsInFrame;
 }
 
+QVector<LocAndName> ObjectInfoHandler::getRectsIn(int frameNumber)
+{
+    QVector<LocAndName> itemsInFrame;
+
+    for(int i = 0; i < _objectList.size(); ++i)
+    {
+        for(int j = 0; j < _objectList[i].objectLocs().size(); ++j)
+        {
+            if(_objectList[i].objectLocs()[j]._frameNumber == frameNumber)
+            {
+                LocAndName t(_objectList[i].name(),
+                             _objectList[i].objectLocs()[j]._rect);
+
+                itemsInFrame.push_back(t);
+            }
+        }
+    }
+    return itemsInFrame;
+}
+
 void ObjectInfoHandler::addTracker(int index, int frameNumber, cv::Rect loc, cv::Mat frame)
 {
     ObjectTracker ot(frame,loc);
@@ -264,15 +338,38 @@ void ObjectInfoHandler::addTracker(int index, int frameNumber, cv::Rect loc, cv:
     _objectList[index].addObjectLoc(ObjectLoc(frameNumber,loc));
 }
 
-void ObjectInfoHandler::updateTrackers(int frameNumber, cv::Mat frame)
+void ObjectInfoHandler::deleteTracker(int index)
 {
+    _objectTrackers.remove(index);
+}
+
+cv::Mat ObjectInfoHandler::updateTrackers(int frameNumber, cv::Mat frame)
+{
+    QVector<cv::Rect> rectsToDraw;
     for(int i = 0; i < _objectTrackers.size(); ++i)
     {
         cv::Rect loc(_objectTrackers[i].getObject(frame));
 
-        _objectList[_objectTrackers[i].trackerIndex()].
-                addObjectLoc(ObjectLoc(frameNumber,loc));
+        if(loc == cv::Rect())
+        {
+            _objectTrackers.erase(_objectTrackers.begin()+i);
+        }
+        else
+        {
+            _objectList[_objectTrackers[i].trackerIndex()].
+                    addObjectLoc(ObjectLoc(frameNumber,loc));
+
+            rectsToDraw.push_back(loc);
+        }
     }
+
+    cv::Mat t(frame.clone());
+
+    for(int i = 0; i < rectsToDraw.size(); ++i)
+    {
+        cv::rectangle(t,rectsToDraw[i],cv::Scalar(255,0,0),3);
+    }
+    return t;
 }
 
 void ObjectInfoHandler::loadObjectInfo()

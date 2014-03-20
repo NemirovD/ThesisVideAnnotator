@@ -40,6 +40,17 @@ public:
     ObjectLoc(int,cv::Rect);
     int _frameNumber;
     cv::Rect _rect;
+    friend cv::FileStorage& operator << (cv::FileStorage& fs, const ObjectLoc ol);
+    friend cv::FileNode& operator >> (cv::FileNode& fn, ObjectLoc& ol);
+};
+
+class LocAndName
+{
+public:
+    LocAndName();
+    LocAndName(std::string,cv::Rect);
+    cv::Rect _loc;
+    std::string _name;
 };
 
 class ObjectInfo
@@ -94,6 +105,7 @@ public:
 
     //getters
     QVector<ObjectInfo> objectList() const;
+    QVector<ObjectTracker> objectTrackers() const;
 
     //state checkers
     bool isOpened() const;
@@ -109,8 +121,12 @@ public:
 
     //Misc
     QVector<ObjectInfo> getObjectsIn(int frameNumber);
+    QVector<LocAndName> getRectsIn(int frameNumber);
+
+
     void addTracker(int index, int frameNumber, cv::Rect,cv::Mat);
-    void updateTrackers(int, cv::Mat);
+    void deleteTracker(int index);
+    cv::Mat updateTrackers(int, cv::Mat);
 private:
     void loadObjectInfo();
     bool isObjectInList(QVector<ObjectInfo>,ObjectInfo);

@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->objectSideBar->setVisible(false);
+    ui->trackerSideBar->setVisible(false);
 
     vidController = new VidController(this);
 
@@ -66,6 +67,26 @@ MainWindow::MainWindow(QWidget *parent) :
             SIGNAL(currentRowChanged(int)),
             vidController,
             SLOT(currentObjectListIndex(int)));
+
+    connect(vidController,
+            SIGNAL(objectListChanged(const QVector<ul::ObjectInfo>)),
+            ui->trackerList,
+            SLOT(updateObjectList(const QVector<ul::ObjectInfo>)));
+
+    connect(ui->trackerList,
+            SIGNAL(currentRowChanged(int)),
+            vidController,
+            SLOT(currentTrackerListIndex(int)));
+
+    connect(vidController,
+            SIGNAL(trackerListChanged(QVector<ObjectTracker>)),
+            ui->trackerList,
+            SLOT(updateTrackerList(const QVector<ObjectTracker>)));
+
+    connect(ui->deleteTrackerButton,
+            SIGNAL(clicked()),
+            vidController,
+            SLOT(deleteTracker()));
 }
 
 MainWindow::~MainWindow()

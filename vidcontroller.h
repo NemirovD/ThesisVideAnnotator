@@ -7,6 +7,7 @@
 #include <QThread>
 #include <QPushButton>
 #include <opencv2/opencv.hpp>
+#include "objecttracker.h"
 #include "utils.h"
 #include "rectdrawer.h"
 
@@ -47,6 +48,7 @@ signals:
     void processedImage(const QImage& image);
     void objectListChanged(const QVector<ul::ObjectInfo> objects);
 
+    void trackerListChanged(const QVector<ObjectTracker>);
     void videoEnded();
 public slots:
     void mouseDown(const QPoint&, const QSize&);
@@ -57,7 +59,10 @@ public slots:
     void showObject(int);
     void showObjects(bool);
     void currentObjectListIndex(int);
+    void currentTrackerListIndex(int);
     void newTracker(cv::Rect);
+    void newTrack(cv::Rect);
+    void deleteTracker();
 protected:
     void run();
 
@@ -66,6 +71,7 @@ private:
     cv::Point labelSizeToImageSize(const QPoint&,const QSize&);
     QImage* processImage(cv::Mat frame);
     void addObjectsToFrame();
+    void addRectsToFrame();
     //void addObjectToFrame(ul::ObjectInfo object);
 
     bool quit;
@@ -75,6 +81,7 @@ private:
 
     int framerate;
     int _currentObjectListIndex;
+    int _currentTrackerListIndex;
     QImage* img;
     cv::Mat frame;
     cv::Mat RGBframe;

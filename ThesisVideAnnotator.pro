@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     objectlistwidget.cpp \
     editobjectdialog.cpp \
     objecttracker.cpp \
-    confirmationdialog.cpp
+    confirmationdialog.cpp \
+    trackerlistwidget.cpp \
+    imageresizer.cpp
 
 HEADERS  += mainwindow.h \
     vidcontroller.h \
@@ -35,7 +37,9 @@ HEADERS  += mainwindow.h \
     objectlistwidget.h \
     editobjectdialog.h \
     objecttracker.h \
-    confirmationdialog.h
+    confirmationdialog.h \
+    trackerlistwidget.h \
+    imageresizer.h
 
 FORMS    += mainwindow.ui \
     addobjectdialog.ui \
@@ -45,6 +49,8 @@ FORMS    += mainwindow.ui \
 
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_core240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_video240
+win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_flann240
+win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_nonfree240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_highgui240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_imgproc240
 win32: LIBS += -L$$PWD/../../../../../../Android_Project/opencv/build/x86/vc10/lib/ -lopencv_features2d240

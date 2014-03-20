@@ -7,7 +7,7 @@ ObjectListWidget::ObjectListWidget(QWidget *parent) :
 
 void ObjectListWidget::updateObjectList(const QVector<ul::ObjectInfo> objects)
 {
-    this->clear();
+    clear();
     for(int i = 0; i < objects.size(); ++i)
     {
         QListWidgetItem* item = new QListWidgetItem(this);

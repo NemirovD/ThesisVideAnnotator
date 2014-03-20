@@ -9,6 +9,8 @@ VidController::VidController(QObject *parent) :
     capture = new cv::VideoCapture;
     draw_objects = false;
     mouseCallbackMode = MODE_NONE;
+    _currentObjectListIndex = -1;
+    _currentTrackerListIndex = -1;
 }
 
 VidController::~VidController()
@@ -88,6 +90,11 @@ void VidController::mouseDown(const QPoint &pt, const QSize &sz)
                     SIGNAL(objectInfoCreated(ul::ObjectInfo)),
                     this,
                     SLOT(addObject(ul::ObjectInfo)));
+
+            connect(t,
+                    SIGNAL(newTracker(cv::Rect)),
+                    this,
+                    SLOT(newTrack(cv::Rect)));
             _rectDrawer = t;
             break;
         }
@@ -145,8 +152,8 @@ void VidController::mouseUp(const QPoint &pt, const QSize &sz)
 {
     switch(mouseCallbackMode)
     {
-    case MODE_ADD_TRACKER:
     case MODE_ADD_OBJECT:
+    case MODE_ADD_TRACKER:
     case MODE_MOVE_RECT:
         _rectDrawer->onMouseUp(pt,sz);
         break;
@@ -209,12 +216,37 @@ void VidController::showObjects(bool show)
 void VidController::currentObjectListIndex(int n)
 {_currentObjectListIndex = n;}
 
+void VidController::currentTrackerListIndex(int n)
+{_currentTrackerListIndex = n;}
+
 void VidController::newTracker(cv::Rect r)
 {
-    objectHandler.addTracker(_currentObjectListIndex,
+    if(_currentObjectListIndex > -1)
+    {
+        objectHandler.addTracker(_currentObjectListIndex,
+                                 getCurrentFrame(),
+                                 r,
+                                 frame);
+        emit trackerListChanged(objectHandler.objectTrackers());
+    }
+}
+
+void VidController::newTrack(cv::Rect r)
+{
+    objectHandler.addTracker(objectHandler.objectList().size()-1,
                              getCurrentFrame(),
                              r,
                              frame);
+    emit trackerListChanged(objectHandler.objectTrackers());
+}
+
+void VidController::deleteTracker()
+{
+    if(_currentTrackerListIndex > -1)
+    {
+        objectHandler.deleteTracker(_currentTrackerListIndex);
+        emit trackerListChanged(objectHandler.objectTrackers());
+    }
 }
 
 void VidController::run()
@@ -240,9 +272,12 @@ void VidController::run()
             }
             else
             {
-                if(draw_objects)
-                   addObjectsToFrame();
-                img = processImage(frame);
+                if(draw_objects){
+                   //addObjectsToFrame();
+                   addRectsToFrame();
+                }
+                cv::Mat t(objectHandler.updateTrackers(getCurrentFrame(),frame));
+                img = processImage(t);
             }
         }
         if(!frame.empty())
@@ -312,6 +347,29 @@ void VidController::addObjectsToFrame()
 
         cv::putText(frame,
                     objectsInFrame[i].name(),
+                    cv::Point(r.x,r.y-10),
+                    cv::FONT_HERSHEY_DUPLEX,
+                    2,
+                    cv::Scalar::all(255),
+                    4);
+    }
+}
+
+void VidController::addRectsToFrame()
+{
+
+    QVector<ul::LocAndName> rectsInFrame(objectHandler.getRectsIn(getCurrentFrame()));
+
+    for(int i = 0; i < rectsInFrame.size(); ++i)
+    {
+        cv::Rect r = rectsInFrame[i]._loc;
+        cv::rectangle(frame,
+                      r,
+                      cv::Scalar::all(255),
+                      4);
+
+        cv::putText(frame,
+                    rectsInFrame[i]._name,
                     cv::Point(r.x,r.y-10),
                     cv::FONT_HERSHEY_DUPLEX,
                     2,

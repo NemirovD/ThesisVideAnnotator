@@ -25,6 +25,7 @@ protected:
     cv::Rect _rect;
     cv::Mat _frame;
     cv::Mat _tFrame;
+    ConfirmationDialog * _cDialog;
 };
 
 class AddObjectRectDrawer : public RectDrawer
@@ -35,8 +36,10 @@ public:
     void onMouseUp(const QPoint &, const QSize &);
 signals:
     void objectInfoCreated(const ul::ObjectInfo&);
+    void newTracker(cv::Rect);
 public slots:
     void createObjectInfo(std::string,std::string);
+    void createTracker(bool);
 private:
     AddObjectDialog *_addObjectDialog;
     cv::Mat _icon;

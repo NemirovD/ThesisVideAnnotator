@@ -18,28 +18,34 @@
     <item>
      <layout class="QVBoxLayout" name="mainLayout">
       <item>
-       <widget class="VidLabel" name="vidLabel">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="baseSize">
-         <size>
-          <width>768</width>
-          <height>432</height>
-         </size>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
+       <widget class="QWidget" name="widget" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="VidLabel" name="vidLabel">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="baseSize">
+            <size>
+             <width>768</width>
+             <height>432</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
       <item>
@@ -92,9 +98,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="trackerSideBarButton">
+          <property name="text">
+           <string>Show Tracker Sidebar</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="showSideBarButton">
           <property name="text">
-           <string>Show Sidebar</string>
+           <string>Show Object Sidebar</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -165,6 +181,32 @@
       </layout>
      </widget>
     </item>
+    <item>
+     <widget class="QWidget" name="trackerSideBar" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>250</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="TrackerListWidget" name="trackerList"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QPushButton" name="deleteTrackerButton">
+           <property name="text">
+            <string>Delete Tracker</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -207,6 +249,11 @@
    <class>ObjectListWidget</class>
    <extends>QListWidget</extends>
    <header>objectlistwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>TrackerListWidget</class>
+   <extends>QListWidget</extends>
+   <header>trackerlistwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -368,6 +415,22 @@
     <hint type="destinationlabel">
      <x>482</x>
      <y>291</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trackerSideBarButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>trackerSideBar</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>301</x>
+     <y>560</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>832</x>
+     <y>301</y>
     </hint>
    </hints>
   </connection>

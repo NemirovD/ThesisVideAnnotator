@@ -20,11 +20,6 @@ cv::Mat RectDrawer::updateRect(const QPoint &pt, const QSize &sz)
     _tFrame = _frame.clone();
     cv::Point cpt(labelSizeToImageSize(pt,sz));
 
-    std::cout << _rect.x << " " <<
-                 _rect.y << " " <<
-                 _rect.height << " " <<
-                 _rect.width  << " " << std::endl;
-
     _rect.width = cpt.x - _rect.x;
     _rect.height = cpt.y - _rect.y;
 
@@ -84,10 +79,10 @@ void AddObjectRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
         _rect.height *= -1;
     }
 
-    std::cout << _rect.x << " " <<
+    /*std::cout << _rect.x << " " <<
                  _rect.y << " " <<
                  _rect.height << " " <<
-                 _rect.width  << " " << std::endl;
+                 _rect.width  << " " << std::endl;*/
 
     //cv::rectangle(_tFrame, _rect, cv::Scalar::all(255),3);
 
@@ -99,6 +94,15 @@ void AddObjectRectDrawer::onMouseUp(const QPoint &pt, const QSize &sz)
                 this,
                 SLOT(createObjectInfo(std::string,std::string)));
         _addObjectDialog->exec();
+
+        _cDialog = new ConfirmationDialog(
+                    "Do you want to create a Tracker for this object?");
+
+        connect(_cDialog,
+                SIGNAL(confirmed(bool)),
+                this,
+                SLOT(createTracker(bool)));
+        _cDialog->exec();
     }
 }
 
@@ -106,6 +110,14 @@ void AddObjectRectDrawer::createObjectInfo(std::string name, std::string url)
 {
     ul::ObjectInfo t(_icon, name, url, _frameNumber, _rect);
     emit objectInfoCreated(t);
+}
+
+void AddObjectRectDrawer::createTracker(bool tf)
+{
+    if(tf)
+    {
+        emit newTracker(_rect);
+    }
 }
 
 MoveRectDrawer::MoveRectDrawer(const QPoint &pt,
@@ -258,8 +270,4 @@ void AddTrackerRectDrawer::createTracker(bool tf)
     {
         emit newTracker(_rect);
     }
-    disconnect(_cDialog,
-               SIGNAL(confirmed(bool)),
-               this,
-               SLOT(createTracker(bool)));
 }
